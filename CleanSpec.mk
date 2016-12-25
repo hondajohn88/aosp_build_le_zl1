@@ -354,7 +354,7 @@ $(call add-clean-step, rm -rf $(PRODUCT_OUT)/system/build.prop)
 $(call add-clean-step, rm -rf $(PRODUCT_OUT)/root/default.prop)
 $(call add-clean-step, rm -rf $(PRODUCT_OUT)/recovery/root/default.prop)
 
-# New York, New York!
+# Change PLATFORM_VERSION from MNC to M
 $(call add-clean-step, rm -rf $(PRODUCT_OUT)/system/build.prop)
 $(call add-clean-step, rm -rf $(PRODUCT_OUT)/system/app/*)
 $(call add-clean-step, rm -rf $(PRODUCT_OUT)/obj/APPS/*)
@@ -364,19 +364,12 @@ $(call add-clean-step, rm -rf $(PRODUCT_OUT)/system/build.prop)
 $(call add-clean-step, rm -rf $(PRODUCT_OUT)/system/app/*)
 $(call add-clean-step, rm -rf $(PRODUCT_OUT)/obj/APPS/*)
 
-$(call add-clean-step, rm -rf $(PRODUCT_OUT)/system/build.prop)
-
-# Change PLATFORM_VERSION from NYC to N
+# 23 is becoming more alive!!!
 $(call add-clean-step, rm -rf $(PRODUCT_OUT)/system/build.prop)
 $(call add-clean-step, rm -rf $(PRODUCT_OUT)/system/app/*)
 $(call add-clean-step, rm -rf $(PRODUCT_OUT)/obj/APPS/*)
 
-# $(PRODUCT_OUT)/recovery/root/sdcard goes from symlink to folder.
-$(call add-clean-step, rm -rf $(PRODUCT_OUT)/recovery/root/sdcard)
-
-# Add BOARD_USES_SYSTEM_OTHER_ODEX
-$(call add-clean-step, rm -rf $(PRODUCT_OUT)/system/app/*)
-$(call add-clean-step, rm -rf $(PRODUCT_OUT)/system/priv-app/*)
+$(call add-clean-step, rm -rf $(PRODUCT_OUT)/system/build.prop)
 
 # ************************************************
 # NEWER CLEAN STEPS MUST BE AT THE END OF THE LIST

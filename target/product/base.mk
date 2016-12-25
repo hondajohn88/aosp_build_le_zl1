@@ -25,13 +25,12 @@ PRODUCT_PACKAGES += \
     android.policy \
     android.test.runner \
     app_process \
-    audioserver \
     blkid \
     bmgr \
     bugreport \
-    bugreportz \
-    cameraserver \
     content \
+    dhcpcd \
+    dhcpcd-run-hooks \
     dnsmasq \
     dpm \
     framework \
@@ -50,7 +49,6 @@ PRODUCT_PACKAGES += \
     libbundlewrapper \
     libcamera_client \
     libcameraservice \
-    libcamera2ndk \
     libdl \
     libdrmclearkeyplugin \
     libeffectproxy \
@@ -95,19 +93,14 @@ PRODUCT_PACKAGES += \
     libvisualizer \
     libvorbisidec \
     libmediandk \
-    libvulkan \
     libwifi-service \
     media \
     media_cmd \
-    mediadrmserver \
     mediaserver \
-    mediacodec \
-    mediaextractor \
     monkey \
     mtpd \
     ndc \
     netd \
-    om \
     ping \
     ping6 \
     platform.xml \
@@ -125,6 +118,7 @@ PRODUCT_PACKAGES += \
     svc \
     tc \
     telecom \
+    tm \
     vdc \
     vold \
     wm

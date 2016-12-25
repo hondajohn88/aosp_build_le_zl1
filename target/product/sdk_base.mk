@@ -21,6 +21,7 @@ PRODUCT_PACKAGES := \
 	CubeLiveWallpapers \
 	CustomLocale \
 	Development \
+	DevelopmentSettings \
 	Dialer \
 	EmulatorSmokeTests \
 	Fallback \
@@ -44,7 +45,6 @@ PRODUCT_PACKAGES := \
 	SoftKeyboard \
 	sqlite3 \
 	SystemUI \
-	EasterEgg \
 	WidgetPreview
 
 # Define the host tools and libs that are parts of the SDK.
@@ -60,7 +60,7 @@ PRODUCT_PACKAGES += \
 PRODUCT_PACKAGE_OVERLAYS := development/sdk_overlay
 
 PRODUCT_COPY_FILES := \
-	device/sample/etc/old-apns-conf.xml:system/etc/old-apns-conf.xml \
+	device/generic/goldfish/data/etc/apns-conf.xml:system/etc/apns-conf.xml \
 	device/generic/goldfish/data/etc/handheld_core_hardware.xml:system/etc/permissions/handheld_core_hardware.xml \
 	device/generic/goldfish/camera/media_profiles.xml:system/etc/media_profiles.xml \
 	frameworks/av/media/libstagefright/data/media_codecs_google_audio.xml:system/etc/media_codecs_google_audio.xml \
@@ -69,7 +69,6 @@ PRODUCT_COPY_FILES := \
 	device/generic/goldfish/camera/media_codecs.xml:system/etc/media_codecs.xml \
 	frameworks/native/data/etc/android.hardware.touchscreen.multitouch.jazzhand.xml:system/etc/permissions/android.hardware.touchscreen.multitouch.jazzhand.xml \
 	frameworks/native/data/etc/android.hardware.camera.autofocus.xml:system/etc/permissions/android.hardware.camera.autofocus.xml \
-	frameworks/native/data/etc/android.hardware.fingerprint.xml:system/etc/permissions/android.hardware.fingerprint.xml \
 	frameworks/av/media/libeffects/data/audio_effects.conf:system/etc/audio_effects.conf \
 	hardware/libhardware_legacy/audio/audio_policy.conf:system/etc/audio_policy.conf
 

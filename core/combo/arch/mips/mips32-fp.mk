@@ -7,7 +7,6 @@ arch_variant_cflags := \
     -mips32 \
     -mfp32 \
     -modd-spreg \
-    -mno-synci
 
 arch_variant_ldflags := \
     -Wl,-melf32ltsmip

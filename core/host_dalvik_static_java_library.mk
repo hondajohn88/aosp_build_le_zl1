@@ -24,7 +24,7 @@ ifeq ($(HOST_OS),linux)
 LOCAL_UNINSTALLABLE_MODULE := true
 LOCAL_IS_STATIC_JAVA_LIBRARY := true
 USE_CORE_LIB_BOOTCLASSPATH := true
-LOCAL_JAVA_LIBRARIES += core-oj-hostdex core-libart-hostdex
+LOCAL_JAVA_LIBRARIES += core-libart-hostdex
 
 intermediates.COMMON := $(call intermediates-dir-for,JAVA_LIBRARIES,$(LOCAL_MODULE),true,COMMON,)
 full_classes_jack := $(intermediates.COMMON)/classes.jack
@@ -34,10 +34,7 @@ LOCAL_INTERMEDIATE_TARGETS += \
 include $(BUILD_SYSTEM)/host_java_library.mk
 # proguard is not supported
 # *.proto files are not supported
-$(LOCAL_INTERMEDIATE_TARGETS): PRIVATE_JACK_FLAGS := $(GLOBAL_JAVAC_DEBUG_FLAGS) $(LOCAL_JACK_FLAGS)
-$(LOCAL_INTERMEDIATE_TARGETS): PRIVATE_JACK_VERSION := $(LOCAL_JACK_VERSION)
-$(LOCAL_INTERMEDIATE_TARGETS): PRIVATE_JACK_MIN_SDK_VERSION := $(PLATFORM_JACK_MIN_SDK_VERSION)
-
+$(full_classes_jack): PRIVATE_JACK_FLAGS := $(LOCAL_JACK_FLAGS)
 $(full_classes_jack): PRIVATE_JARJAR_RULES := $(LOCAL_JARJAR_RULES)
 $(full_classes_jack): \
 	PRIVATE_JACK_INTERMEDIATES_DIR := $(intermediates.COMMON)/jack-rsc
@@ -48,12 +45,13 @@ else
 $(full_classes_jack): \
 	PRIVATE_JACK_INCREMENTAL_DIR :=
 endif
-$(full_classes_jack): $(java_sources) $(java_resource_sources) $(full_jack_deps) \
-        $(jar_manifest_file) $(layers_file) $(LOCAL_MODULE_MAKEFILE_DEP) \
+$(full_classes_jack): $(java_sources) $(java_resource_sources) $(full_jack_lib_deps) \
+        $(jar_manifest_file) $(layers_file) $(LOCAL_MODULE_MAKEFILE) \
         $(LOCAL_ADDITIONAL_DEPENDENCIES) $(LOCAL_JARJAR_RULES) \
-        $(JACK) | setup-jack-server
-	@echo -e ${CL_GRN}"Building with Jack:"${CL_RST}" $@"
+        $(JACK_JAR) $(JACK_LAUNCHER_JAR)
+	@echo Building with Jack: $@
 	$(java-to-jack)
 
+USE_CORE_LIB_BOOTCLASSPATH :=
 LOCAL_IS_STATIC_JAVA_LIBRARY :=
 endif

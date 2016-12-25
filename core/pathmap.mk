@@ -16,14 +16,7 @@
 
 #
 # A central place to define mappings to paths, to avoid hard-coding
-# them in Android.mk files. Not meant for header file include directories,
-# despite the fact that it was historically used for that!
-#
-# If you want this for a library's header files, use LOCAL_EXPORT_C_INCLUDES
-# instead. Then users of the library don't have to do anything --- they'll
-# have the correct header files added to their include path automatically.
-#
-
+# them in Android.mk files.
 #
 # TODO: Allow each project to define stuff like this before the per-module
 #       Android.mk files are included, so we don't need to have a big central
@@ -37,9 +30,16 @@ pathmap_INCL := \
     camera:system/media/camera/include \
     frameworks-base:frameworks/base/include \
     frameworks-native:frameworks/native/include \
+    libc:bionic/libc/include \
     libhardware:hardware/libhardware/include \
     libhardware_legacy:hardware/libhardware_legacy/include \
+    libhost:build/libs/host/include \
+    libm:bionic/libm/include \
+    libnativehelper:libnativehelper/include \
+    libpagemap:system/extras/libpagemap/include \
     libril:hardware/ril/include \
+    libstdc++:bionic/libstdc++/include \
+    mkbootimg:system/core/mkbootimg \
     opengl-tests-includes:frameworks/native/opengl/tests/include \
     recovery:bootable/recovery \
     system-core:system/core/include \
@@ -67,7 +67,7 @@ endef
 # Many modules expect to be able to say "#include <jni.h>",
 # so make it easy for them to find the correct path.
 #
-JNI_H_INCLUDE := libnativehelper/include/nativehelper
+JNI_H_INCLUDE := $(call include-path-for,libnativehelper)/nativehelper
 
 #
 # A list of all source roots under frameworks/base, which will be
@@ -106,11 +106,7 @@ FRAMEWORKS_BASE_JAVA_SRC_DIRS := \
 #
 FRAMEWORKS_SUPPORT_SUBDIRS := \
         annotations \
-        compat \
-        media-compat \
-        fragment \
-        core-ui \
-        core-utils \
+        v4 \
         v7/gridlayout \
         v7/cardview \
         v7/mediarouter \
@@ -121,11 +117,9 @@ FRAMEWORKS_SUPPORT_SUBDIRS := \
         design \
         percent \
         recommendation \
-        transition \
         v7/preference \
         v14/preference \
         v17/preference-leanback \
-        documents-archive \
         customtabs
 
 #
@@ -142,8 +136,6 @@ FRAMEWORKS_MULTIDEX_SUBDIRS := \
 FRAMEWORKS_SUPPORT_JAVA_SRC_DIRS := \
 	$(addprefix frameworks/support/,$(FRAMEWORKS_SUPPORT_SUBDIRS)) \
 	$(addprefix frameworks/,$(FRAMEWORKS_MULTIDEX_SUBDIRS)) \
-        frameworks/support/graphics/drawable/animated \
-        frameworks/support/graphics/drawable/static \
 	frameworks/support/v7/appcompat/src \
 	frameworks/support/v7/recyclerview/src
 
@@ -152,9 +144,6 @@ FRAMEWORKS_SUPPORT_JAVA_SRC_DIRS := \
 #
 FRAMEWORKS_SUPPORT_JAVA_LIBRARIES := \
     $(foreach dir,$(FRAMEWORKS_SUPPORT_SUBDIRS),android-support-$(subst /,-,$(dir))) \
-    android-support-v4 \
-    android-support-vectordrawable \
-    android-support-animatedvectordrawable \
     android-support-v7-appcompat \
     android-support-v7-recyclerview \
     android-support-multidex \
@@ -165,8 +154,8 @@ FRAMEWORKS_SUPPORT_JAVA_LIBRARIES := \
 #
 FRAMEWORKS_DATA_BINDING_SUBDIRS := \
         baseLibrary/src/main \
-        extensions/library/src/main \
-        extensions/library/src/doc
+        library/src/main \
+        library/src/doc
 
 #
 # A version of FRAMEWORKS_DATA_BINDING_SUBDIRS that is expanded to full paths from

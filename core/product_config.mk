@@ -74,7 +74,7 @@ endif
 ###########################################################
 
 define find-copy-subdir-files
-$(sort $(shell find $(2) -name "$(1)" -type f | $(SED_EXTENDED) "s:($(2)/?(.*)):\\1\\:$(3)/\\2:" | sed "s://:/:g"))
+$(shell find $(2) -name "$(1)" | $(SED_EXTENDED) "s:($(2)/?(.*)):\\1\\:$(3)/\\2:" | sed "s://:/:g")
 endef
 
 # ---------------------------------------------------------------
@@ -149,7 +149,7 @@ endif
 unbundled_goals := $(strip $(filter APP-%,$(MAKECMDGOALS)))
 ifdef unbundled_goals
   ifneq ($(words $(unbundled_goals)),1)
-    $(error Only one APP-* goal may be specified; saw "$(unbundled_goals)")
+    $(error Only one APP-* goal may be specified; saw "$(unbundled_goals)"))
   endif
   TARGET_BUILD_APPS := $(strip $(subst -, ,$(patsubst APP-%,%,$(unbundled_goals))))
   ifneq ($(filter $(DEFAULT_GOAL),$(MAKECMDGOALS)),)
@@ -222,19 +222,7 @@ endif
 current_product_makefile := $(strip $(current_product_makefile))
 all_product_makefiles := $(strip $(all_product_makefiles))
 
-load_all_product_makefiles :=
-ifneq (,$(filter product-graph, $(MAKECMDGOALS)))
-ifeq ($(ANDROID_PRODUCT_GRAPH),--all)
-load_all_product_makefiles := true
-endif
-endif
-ifneq (,$(filter dump-products,$(MAKECMDGOALS)))
-ifeq ($(ANDROID_DUMP_PRODUCTS),all)
-load_all_product_makefiles := true
-endif
-endif
-
-ifeq ($(load_all_product_makefiles),true)
+ifneq (,$(filter product-graph dump-products, $(MAKECMDGOALS)))
 # Import all product makefiles.
 $(call import-products, $(all_product_makefiles))
 else
@@ -307,11 +295,9 @@ PRODUCT_AAPT_CONFIG := \
 
 # product-scoped aapt flags
 PRODUCT_AAPT_FLAGS :=
-PRODUCT_AAPT2_CFLAGS :=
 ifneq ($(filter en_XA ar_XB,$(PRODUCT_LOCALES)),)
-  # Force generating resources for pseudo-locales.
-  PRODUCT_AAPT2_CFLAGS += --pseudo-localize
-  PRODUCT_AAPT_FLAGS += --pseudo-localize
+# Force generating resources for pseudo-locales.
+PRODUCT_AAPT_FLAGS += --pseudo-localize
 endif
 
 PRODUCT_BRAND := $(strip $(PRODUCTS.$(INTERNAL_PRODUCT).PRODUCT_BRAND))
@@ -375,12 +361,6 @@ listcopies:
 PRODUCT_PROPERTY_OVERRIDES := \
     $(strip $(PRODUCTS.$(INTERNAL_PRODUCT).PRODUCT_PROPERTY_OVERRIDES))
 
-PRODUCT_SHIPPING_API_LEVEL := $(strip $(PRODUCTS.$(INTERNAL_PRODUCT).PRODUCT_SHIPPING_API_LEVEL))
-ifdef PRODUCT_SHIPPING_API_LEVEL
-ADDITIONAL_BUILD_PROPERTIES += \
-    ro.product.first_api_level=$(PRODUCT_SHIPPING_API_LEVEL)
-endif
-
 # A list of property assignments, like "key = value", with zero or more
 # whitespace characters on either side of the '='.
 # used for adding properties to default.prop
@@ -419,7 +399,7 @@ PRODUCT_DEX_PREOPT_DEFAULT_FLAGS := \
     $(strip $(PRODUCTS.$(INTERNAL_PRODUCT).PRODUCT_DEX_PREOPT_DEFAULT_FLAGS))
 PRODUCT_DEX_PREOPT_BOOT_FLAGS := \
     $(strip $(PRODUCTS.$(INTERNAL_PRODUCT).PRODUCT_DEX_PREOPT_BOOT_FLAGS))
-# Resolve and setup per-module dex-preopt configs.
+# Resolve and setup per-module dex-preopot configs.
 PRODUCT_DEX_PREOPT_MODULE_CONFIGS := \
     $(strip $(PRODUCTS.$(INTERNAL_PRODUCT).PRODUCT_DEX_PREOPT_MODULE_CONFIGS))
 # If a module has multiple setups, the first takes precedence.
@@ -432,17 +412,3 @@ $(foreach c,$(PRODUCT_DEX_PREOPT_MODULE_CONFIGS),\
     $(eval cf := $(subst $(_PDPMC_SP_PLACE_HOLDER),$(space),$(cf)))\
     $(eval DEXPREOPT.$(TARGET_PRODUCT).$(m).CONFIG := $(cf))))
 _pdpmc_modules :=
-
-# Resolve and setup per-module sanitizer configs.
-PRODUCT_SANITIZER_MODULE_CONFIGS := \
-    $(strip $(PRODUCTS.$(INTERNAL_PRODUCT).PRODUCT_SANITIZER_MODULE_CONFIGS))
-# If a module has multiple setups, the first takes precedence.
-_psmc_modules :=
-$(foreach c,$(PRODUCT_SANITIZER_MODULE_CONFIGS),\
-  $(eval m := $(firstword $(subst =,$(space),$(c))))\
-  $(if $(filter $(_psmc_modules),$(m)),,\
-    $(eval _psmc_modules += $(m))\
-    $(eval cf := $(patsubst $(m)=%,%,$(c)))\
-    $(eval cf := $(subst $(_PSMC_SP_PLACE_HOLDER),$(space),$(cf)))\
-    $(eval SANITIZER.$(TARGET_PRODUCT).$(m).CONFIG := $(cf))))
-_psmc_modules :=

@@ -24,9 +24,11 @@
 #include <errno.h>
 #include <assert.h>
 
+#ifdef HAVE_MS_C_RUNTIME
+#  define  mkdir(path,mode)   _mkdir(path)
+#endif
+
 #if defined(_WIN32)
-#include <direct.h>  /* For _mkdir() */
-#  define mkdir(path,mode)   _mkdir(path)
 #  define S_ISLNK(s) 0
 #  define lstat stat
 #  ifndef EACCESS   /* seems to be missing from the Mingw headers */
@@ -67,9 +69,9 @@ static bool isSourceNewer(const struct stat* pSrcStat, const struct stat* pDstSt
  */
 static bool isHiresMtime(const struct stat* pSrcStat)
 {
-#if defined(_WIN32)
-    return 0;
-#elif defined(__APPLE__)
+#if defined(__CYGWIN__) || defined(__MINGW32__)
+  return 0;
+#elif defined(MACOSX_RSRC)
     return pSrcStat->st_mtimespec.tv_nsec > 0;
 #else
     return pSrcStat->st_mtim.tv_nsec > 0;
@@ -83,9 +85,7 @@ static bool isHiresMtime(const struct stat* pSrcStat)
  */
 static bool isSameFile(const struct stat* pSrcStat, const struct stat* pDstStat)
 {
-#if defined(_WIN32)
-  (void)pSrcStat;
-  (void)pDstStat;
+#ifndef HAVE_VALID_STAT_ST_INO
     /* with MSVCRT.DLL, stat always sets st_ino to 0, and there is no simple way to */
 	/* get the equivalent information with Win32 (Cygwin does some weird stuff in   */
 	/* its winsup/cygwin/fhandler_disk_file.cc to emulate this, too complex for us) */
@@ -103,7 +103,6 @@ static void printCopyMsg(const char* src, const char* dst, unsigned int options)
 
 static void printNotNewerMsg(const char* src, const char* dst, unsigned int options)
 {
-    (void)src;
     if ((options & COPY_VERBOSE_MASK) > 1)
         printf("    '%s' is up-to-date\n", dst);
 }
@@ -184,7 +183,7 @@ static int setPermissions(const char* dst, const struct stat* pSrcStat, unsigned
             DBUG(("---   unable to set perms on '%s' to 0%o: %s\n",
                 dst, pSrcStat->st_mode & ~(S_IFMT), strerror(errno)));
         }
-#ifndef _WIN32
+#ifndef HAVE_MS_C_RUNTIME
         /*
          * Set the owner.
          */
@@ -262,7 +261,7 @@ static int copyRegular(const char* src, const char* dst, const struct stat* pSrc
         /* if "force" is set, try removing the destination file and retry */
         if (options & COPY_FORCE) {
             if (unlink(dst) != 0) {
-#ifdef _WIN32
+#ifdef HAVE_MS_C_RUNTIME
 				/* MSVCRT.DLL unlink will fail with EACCESS if the file is set read-only */
 				/* so try to change its mode, and unlink again                           */
 				if (errno == EACCESS) {
@@ -275,7 +274,7 @@ static int copyRegular(const char* src, const char* dst, const struct stat* pSrc
                 (void) close(srcFd);
                 return -1;
             }
-#ifdef _WIN32
+#ifdef HAVE_MS_C_RUNTIME
         Open_File:
 #endif			
             dstFd = open(dst, O_CREAT | O_TRUNC | O_WRONLY | O_BINARY, 0644);
@@ -295,8 +294,7 @@ static int copyRegular(const char* src, const char* dst, const struct stat* pSrc
     if (copyResult != 0)
         return -1;
 
-#if defined(__APPLE__)
-    // Copy Mac OS X resource forks too.
+#ifdef MACOSX_RSRC
     {
         char* srcRsrcName = NULL;
         char* dstRsrcName = NULL;
@@ -538,7 +536,6 @@ static int copyFileRecursive(const char* src, const char* dst, bool isCmdLine, u
     struct stat srcStat;
     int retVal = 0;
     int statResult, statErrno;
-    (void)isCmdLine;
 
     /*
      * Stat the source file.  If it doesn't exist, fail.
@@ -549,6 +546,57 @@ static int copyFileRecursive(const char* src, const char* dst, bool isCmdLine, u
         statResult = stat(src, &srcStat);
     statErrno = errno;        /* preserve across .exe attempt */
 
+#ifdef WIN32_EXE
+    /*
+     * Here's the interesting part.  Under Cygwin, if you have a file
+     * called "foo.exe", stat("foo", ...) will succeed, but open("foo", ...)
+     * will fail.  We need to figure out what its name is supposed to be
+     * so we can create the correct destination file.
+     *
+     * If we don't have the "-e" flag set, we want "acp foo bar" to fail,
+     * not automatically find "foo.exe".  That way, if we really were
+     * trying to copy "foo", it doesn't grab something we don't want.
+     */
+    if (isCmdLine && statResult == 0) {
+        int tmpFd;
+        tmpFd = open(src, O_RDONLY | O_BINARY, 0);
+        if (tmpFd < 0) {
+            statResult = -1;
+            statErrno = ENOENT;
+        } else {
+            (void) close(tmpFd);
+        }
+    }
+
+    /*
+     * If we didn't find the file, try it again with ".exe".
+     */
+    if (isCmdLine && statResult < 0 && statErrno == ENOENT && (options & COPY_TRY_EXE)) {
+        srcExe = malloc(strlen(src) + 4 +1);
+        strcpy(srcExe, src);
+        strcat(srcExe, ".exe");
+
+        if (options & COPY_NO_DEREFERENCE)
+            statResult = lstat(srcExe, &srcStat);
+        else
+            statResult = stat(srcExe, &srcStat);
+
+        if (statResult == 0 && !S_ISREG(srcStat.st_mode))
+            statResult = -1;        /* fail, use original statErrno below */
+
+        if (statResult == 0) {
+            /* found a .exe, copy that instead */
+            dstExe = malloc(strlen(dst) + 4 +1);
+            strcpy(dstExe, dst);
+            strcat(dstExe, ".exe");
+
+            src = srcExe;
+            dst = dstExe;
+        } else {
+            DBUG(("---  couldn't find '%s' either\n", srcExe));
+        }
+    }
+#endif
     if (statResult < 0) {
         if (statErrno == ENOENT)
             fprintf(stderr, "acp: file '%s' does not exist\n", src);

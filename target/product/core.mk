@@ -22,9 +22,7 @@
 
 PRODUCT_PACKAGES += \
     BasicDreams \
-    BlockedNumberProvider \
-    BookmarkProvider \
-    Calculator \
+    Browser \
     Calendar \
     CalendarProvider \
     CaptivePortalLogin \
@@ -33,6 +31,8 @@ PRODUCT_PACKAGES += \
     DeskClock \
     DocumentsUI \
     DownloadProviderUi \
+    Email \
+    ExactCalculator \
     ExternalStorageProvider \
     FusedLocation \
     InputDevices \
@@ -41,15 +41,12 @@ PRODUCT_PACKAGES += \
     LatinIME \
     Launcher3 \
     ManagedProvisioning \
-    MtpDocumentsProvider \
     PacProcessor \
     libpac \
     PrintSpooler \
-    PrintRecommendationService \
     ProxyHandler \
     Settings \
     SharedStorageBackup \
-    StorageManager \
     Telecom \
     TeleService \
     VpnDialogs \

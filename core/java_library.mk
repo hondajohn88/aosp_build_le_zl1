@@ -47,12 +47,7 @@ endif
 ifeq (true,$(EMMA_INSTRUMENT))
 ifeq (true,$(LOCAL_EMMA_INSTRUMENT))
 ifeq (true,$(EMMA_INSTRUMENT_STATIC))
-ifdef LOCAL_JACK_ENABLED
-# Jack supports coverage with Jacoco
-LOCAL_STATIC_JAVA_LIBRARIES += jacocoagent
-else
 LOCAL_STATIC_JAVA_LIBRARIES += emma
-endif # LOCAL_JACK_ENABLED
 endif # LOCAL_EMMA_INSTRUMENT
 endif # EMMA_INSTRUMENT_STATIC
 else
@@ -86,7 +81,7 @@ else # !LOCAL_IS_STATIC_JAVA_LIBRARY
 $(common_javalib.jar): PRIVATE_DEX_FILE := $(built_dex)
 $(common_javalib.jar): PRIVATE_SOURCE_ARCHIVE := $(full_classes_jarjar_jar)
 $(common_javalib.jar): PRIVATE_DONT_DELETE_JAR_DIRS := $(LOCAL_DONT_DELETE_JAR_DIRS)
-$(common_javalib.jar) : $(built_dex) $(java_resource_sources) | $(ZIPTIME)
+$(common_javalib.jar) : $(built_dex) $(java_resource_sources)
 	@echo -e ${CL_GRN}"target Jar:"${CL_RST}" $(PRIVATE_MODULE) ($@)"
 ifdef LOCAL_JACK_ENABLED
 	$(create-empty-package)
@@ -97,7 +92,6 @@ endif
 ifdef LOCAL_JACK_ENABLED
 	$(add-carried-jack-resources)
 endif
-	$(remove-timestamps-from-package)
 
 ifdef LOCAL_DEX_PREOPT
 ifneq ($(dexpreopt_boot_jar_module),) # boot jar

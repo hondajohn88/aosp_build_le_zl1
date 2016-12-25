@@ -18,10 +18,8 @@ $(foreach header,$(LOCAL_COPY_HEADERS), \
       $(if $(LOCAL_COPY_HEADERS_TO),\
         $($(my_prefix)OUT_HEADERS)/$(LOCAL_COPY_HEADERS_TO)/$(notdir $(header)),\
         $($(my_prefix)OUT_HEADERS)/$(notdir $(header)))) \
-  $(eval ALL_COPIED_HEADERS.$(_chTo).MAKEFILE += $(LOCAL_MODULE_MAKEFILE)) \
-  $(eval ALL_COPIED_HEADERS.$(_chTo).SRC += $(_chFrom)) \
-  $(if $(filter $(_chTo),$(ALL_COPIED_HEADERS)),, \
-      $(eval ALL_COPIED_HEADERS += $(_chTo))) \
+  $(eval $(call copy-one-header,$(_chFrom),$(_chTo))) \
+  $(eval all_copied_headers: $(_chTo)) \
  )
 _chFrom :=
 _chTo :=

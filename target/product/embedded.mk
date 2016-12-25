@@ -22,8 +22,6 @@ PRODUCT_PACKAGES += \
     adbd \
     atrace \
     bootanimation \
-    bootstat \
-    cmd \
     debuggerd \
     dumpstate \
     dumpsys \
@@ -40,10 +38,8 @@ PRODUCT_PACKAGES += \
     libFFTEm \
     libGLESv1_CM \
     libGLESv2 \
-    libGLESv3 \
     libbinder \
     libc \
-    libc_malloc_debug \
     libcutils \
     libdl \
     libgui \
@@ -79,7 +75,7 @@ PRODUCT_PACKAGES += \
 # SELinux packages
 PRODUCT_PACKAGES += \
     sepolicy \
-    file_contexts.bin \
+    file_contexts \
     seapp_contexts \
     property_contexts \
     mac_permissions.xml \
